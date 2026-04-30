@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>MindSpace — Your Wellness Companion</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<canvas id="cosmos-canvas"></canvas>
+<div class="aurora aurora-1"></div>
+<div class="aurora aurora-2"></div>
+<div class="aurora aurora-3"></div>
+
+<div class="toast" id="toast"></div>
+
+<div class="app">
+
+  <!-- ── SIDEBAR NAV ── -->
+  <nav class="nav">
+    <div class="nav-brand">
+      <div class="nav-brand-icon">🌿</div>
+      <div class="nav-brand-text">
+        <span class="nav-brand-name">MindSpace</span>
+        <span class="nav-brand-sub">Wellness Companion</span>
+      </div>
+    </div>
+
+    <button class="nav-btn active" onclick="navigate('home')" id="nav-home">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg>
+      <span>Home</span>
+    </button>
+    <button class="nav-btn" onclick="navigate('mood')" id="nav-mood">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><path d="M8 13s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
+      <span>Mood Tracker</span>
+    </button>
+    <button class="nav-btn" onclick="navigate('journal')" id="nav-journal">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+      <span>My Journal</span>
+    </button>
+    <button class="nav-btn" onclick="navigate('meditation')" id="nav-meditation">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><circle cx="9" cy="9" r="1.2" fill="currentColor" stroke="none"/><circle cx="15" cy="9" r="1.2" fill="currentColor" stroke="none"/></svg>
+      <span>Breathe & Relax</span>
+    </button>
+    <button class="nav-btn" onclick="navigate('tasks')" id="nav-tasks">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="9,11 12,14 22,4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+      <span>Daily Goals</span>
+    </button>
+    <button class="nav-btn" onclick="navigate('profile')" id="nav-profile">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      <span>Profile</span>
+    </button>
+    <button class="nav-btn" onclick="navigate('resources')" id="nav-resources">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg>
+      <span>Resources & Tips</span>
+    </button>
+
+    <div class="nav-footer">
+      <p class="nav-footer-text">Take care of yourself 🌸</p>
+    </div>
+  </nav>
+
+  <!-- ── MAIN CONTENT ── -->
+  <div class="main-content">
+
+    <!-- ── PAGE: HOME ── -->
+    <div class="page active" id="page-home">
+      <div class="home-layout">
+        <div class="home-hero">
+          <div class="hero-blobs">
+            <div class="blob blob1"></div>
+            <div class="blob blob2"></div>
+            <div class="blob blob3"></div>
+          </div>
+          <div class="hero-content">
+            <p class="greeting" id="greeting-text">Good morning ✨</p>
+            <h1 class="home-q">How are you<br><em>feeling today?</em></h1>
+            <p class="date-tag" id="date-display"></p>
+          </div>
+        </div>
+
+        <div class="quote-card">
+          <div class="quote-mark">"</div>
+          <p class="quote-text" id="quote-text">Loading your daily inspiration...</p>
+          <p class="quote-author" id="quote-author"></p>
+        </div>
+
+        <p class="section-title">Quick mood check-in</p>
+        <div class="mood-mini-strip">
+          <div class="mood-pill" onclick="quickMood('Happy','😊')">😊 Happy</div>
+          <div class="mood-pill" onclick="quickMood('Calm','😌')">😌 Calm</div>
+          <div class="mood-pill" onclick="quickMood('Sad','😔')">😔 Sad</div>
+          <div class="mood-pill" onclick="quickMood('Angry','😡')">😡 Angry</div>
+          <div class="mood-pill" onclick="quickMood('Anxious','😰')">😰 Anxious</div>
+          <div class="mood-pill" onclick="quickMood('Grateful','🥹')">🥹 Grateful</div>
+        </div>
+
+        <div class="home-stats-row" id="home-stats-row">
+          <div class="hstat"><span class="hstat-num" id="hs-streak">0</span><span class="hstat-label">Day Streak</span></div>
+          <div class="hstat"><span class="hstat-num" id="hs-moods">0</span><span class="hstat-label">Moods Logged</span></div>
+          <div class="hstat"><span class="hstat-num" id="hs-entries">0</span><span class="hstat-label">Journal Entries</span></div>
+          <div class="hstat"><span class="hstat-num" id="hs-tasks">0</span><span class="hstat-label">Tasks Done</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── PAGE: MOOD ── -->
+    <div class="page" id="page-mood">
+      <div class="page-header">
+        <h2 class="page-title">Mood Tracker</h2>
+        <p class="page-subtitle">Select how you're feeling right now</p>
+      </div>
+
+      <div class="mood-grid">
+        <div class="mood-card happy"    onclick="selectMood('Happy','😊',this)"><span class="emoji">😊</span><div class="mlabel">Happy</div></div>
+        <div class="mood-card sad"      onclick="selectMood('Sad','😔',this)"><span class="emoji">😔</span><div class="mlabel">Sad</div></div>
+        <div class="mood-card angry"    onclick="selectMood('Angry','😡',this)"><span class="emoji">😡</span><div class="mlabel">Angry</div></div>
+        <div class="mood-card calm"     onclick="selectMood('Calm','😌',this)"><span class="emoji">😌</span><div class="mlabel">Calm</div></div>
+        <div class="mood-card anxious"  onclick="selectMood('Anxious','😰',this)"><span class="emoji">😰</span><div class="mlabel">Anxious</div></div>
+        <div class="mood-card grateful" onclick="selectMood('Grateful','🥹',this)"><span class="emoji">🥹</span><div class="mlabel">Grateful</div></div>
+      </div>
+
+      <div class="mood-bottom-layout">
+        <div class="card-section mood-note-card">
+          <label class="form-label">Add a note (optional)</label>
+          <textarea id="mood-note" class="form-textarea" placeholder="What's on your mind today?"></textarea>
+          <button class="primary-btn" onclick="saveMood()">Save Mood ✨</button>
+        </div>
+
+        <div class="history-section">
+          <div class="history-header">
+            <p class="section-title" style="margin:0">Mood History</p>
+            <span class="badge" id="mood-count">0 entries</span>
+          </div>
+          <div id="mood-chart-bars"></div>
+          <div id="mood-history"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── PAGE: JOURNAL ── -->
+    <div class="page" id="page-journal">
+      <div class="page-header">
+        <h2 class="page-title">My Journal</h2>
+        <p class="page-subtitle">Your personal digital diary</p>
+      </div>
+
+      <div class="journal-desktop-layout">
+        <div class="journal-form-panel">
+          <div class="card-section">
+            <div class="form-group">
+              <label class="form-label">Title</label>
+              <input class="form-input" id="j-title" placeholder="Give this entry a name...">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Your thoughts</label>
+              <textarea class="form-textarea journal-textarea" id="j-desc" placeholder="Write freely — this is your safe space..."></textarea>
+            </div>
+            <button class="primary-btn" onclick="saveJournal()">Save Entry 📔</button>
+          </div>
+        </div>
+
+        <div class="journal-entries-panel">
+          <p class="section-title">Previous Entries</p>
+          <div class="journal-list" id="journal-list"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── PAGE: MEDITATION ── -->
+    <div class="page" id="page-meditation">
+      <div class="page-header">
+        <h2 class="page-title">Breathe & Relax</h2>
+        <p class="page-subtitle">Guided breathing for inner calm</p>
+      </div>
+
+      <div class="meditation-desktop-layout">
+        <div class="breath-panel">
+          <div class="breath-container">
+            <div class="breath-ring" id="breath-ring">
+              <div class="breath-circle" id="breath-circle">
+                <span id="breath-icon">🌿</span>
+                <span id="breath-timer" class="breath-num">4</span>
+              </div>
+            </div>
+            <h3 class="breath-phase" id="breath-phase">Ready to begin</h3>
+            <p class="breath-instruction" id="breath-instruction">Tap Start and breathe along gently</p>
+            <button class="ctrl-btn" id="breath-btn" onclick="toggleBreath()">Start Session</button>
+            <p class="cycle-count" id="cycle-count"></p>
+          </div>
+        </div>
+
+        <div class="tips-panel">
+          <p class="section-title">Mindfulness Tips</p>
+          <div class="tips-list">
+            <div class="tip-card"><span class="tip-icon">🧠</span><div><h4>Body Scan</h4><p>Slowly scan from head to toe, noticing tension and consciously releasing it with each exhale.</p></div></div>
+            <div class="tip-card"><span class="tip-icon">🌊</span><div><h4>5-4-3-2-1 Grounding</h4><p>Name 5 things you see, 4 you feel, 3 you hear, 2 you smell, 1 you taste.</p></div></div>
+            <div class="tip-card"><span class="tip-icon">☀️</span><div><h4>Morning Intention</h4><p>Set one positive intention each morning to anchor your mindset for the entire day.</p></div></div>
+            <div class="tip-card"><span class="tip-icon">📵</span><div><h4>Digital Detox</h4><p>Schedule 30 minutes of phone-free time daily. Notice how it changes your mental clarity.</p></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── PAGE: TASKS ── -->
+    <div class="page" id="page-tasks">
+      <div class="page-header">
+        <h2 class="page-title">Daily Goals</h2>
+        <p class="page-subtitle">Track your monthly habits — click any day to mark it done</p>
+      </div>
+
+      <div class="ht-controls-bar">
+        <div class="ht-selectors">
+          <div class="ht-selector-group">
+            <label class="ht-label">Year</label>
+            <div class="ht-btn-group" id="ht-year-btns">
+              <button class="ht-period-btn active" onclick="htSetYear(2026,this)">2026</button>
+              <button class="ht-period-btn" onclick="htSetYear(2027,this)">2027</button>
+              <button class="ht-period-btn" onclick="htSetYear(2028,this)">2028</button>
+            </div>
+          </div>
+          <div class="ht-selector-group">
+            <label class="ht-label">Month</label>
+            <select class="ht-month-select" id="ht-month-select" onchange="htSetMonth(this.value)">
+              <option value="1">January</option><option value="2">February</option>
+              <option value="3">March</option><option value="4">April</option>
+              <option value="5">May</option><option value="6">June</option>
+              <option value="7">July</option><option value="8">August</option>
+              <option value="9">September</option><option value="10">October</option>
+              <option value="11">November</option><option value="12">December</option>
+            </select>
+          </div>
+        </div>
+        <div class="ht-legend">
+          <span class="ht-legend-dot done-dot"></span><span>Done</span>
+          <span class="ht-legend-dot miss-dot" style="margin-left:8px"></span><span>Missed</span>
+        </div>
+      </div>
+
+      <div class="ht-add-section">
+        <div class="ht-add-card" id="ht-add-card">
+          <div class="ht-add-header" onclick="htToggleAddForm()">
+            <span class="ht-add-icon">＋</span>
+            <span class="ht-add-label">Add New Habit</span>
+            <span class="ht-add-chevron" id="ht-add-chevron">▾</span>
+          </div>
+          <div class="ht-add-form" id="ht-add-form">
+            <div class="ht-form-fields">
+              <div class="ht-field-group">
+                <label class="ht-label">Habit Name</label>
+                <input class="ht-form-input" id="ht-new-name" placeholder="e.g. Drink 8 glasses of water" maxlength="40" onkeydown="if(event.key==='Enter')htAddHabit()">
+              </div>
+              <div class="ht-field-group ht-field-narrow">
+                <label class="ht-label">Monthly Goal (days)</label>
+                <input class="ht-form-input" id="ht-new-goal" type="number" min="1" max="31" placeholder="e.g. 20" onkeydown="if(event.key==='Enter')htAddHabit()">
+              </div>
+              <div class="ht-field-group ht-field-narrow">
+                <label class="ht-label">Emoji (optional)</label>
+                <input class="ht-form-input" id="ht-new-emoji" placeholder="🌟" maxlength="4">
+              </div>
+            </div>
+            <div class="ht-form-actions">
+              <button class="ht-btn-primary" onclick="htAddHabit()">Add Habit</button>
+              <button class="ht-btn-ghost" onclick="htToggleAddForm()">Cancel</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="habit-tracker-section">
+        <div class="habit-tracker-header">
+          <div class="habit-tracker-title-group">
+            <h3 class="habit-tracker-title">📅 Monthly Habit Tracker</h3>
+            <span class="habit-tracker-meta" id="ht-meta-badge">April 2026 · 30 Days</span>
+          </div>
+        </div>
+
+        <div class="habit-table-wrap">
+          <table class="habit-table" id="ht-main-table">
+            <thead id="ht-thead"></thead>
+            <tbody id="ht-tbody"></tbody>
+          </table>
+        </div>
+
+        <div class="habit-summary-row" id="ht-summary-row">
+          <div class="habit-summary-card">
+            <span class="hs-icon">🏆</span>
+            <div><div class="hs-val" id="hs-best-habit">—</div><div class="hs-lbl">Best habit</div></div>
+          </div>
+          <div class="habit-summary-card">
+            <span class="hs-icon">📊</span>
+            <div><div class="hs-val" id="hs-overall-rate">0%</div><div class="hs-lbl">Overall success rate</div></div>
+          </div>
+          <div class="habit-summary-card">
+            <span class="hs-icon">✅</span>
+            <div><div class="hs-val" id="hs-completions">0 / 0</div><div class="hs-lbl">Completions vs goals</div></div>
+          </div>
+          <div class="habit-summary-card">
+            <span class="hs-icon">🔥</span>
+            <div><div class="hs-val" id="hs-rating">—</div><div class="hs-lbl">Monthly rating</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── PAGE: PROFILE ── -->
+    <div class="page" id="page-profile">
+      <div class="page-header">
+        <h2 class="page-title">Profile</h2>
+        <p class="page-subtitle">Your wellness journey</p>
+      </div>
+      <div class="profile-desktop-layout">
+        <div class="profile-sidebar-panel">
+          <div class="profile-hero">
+            <div class="profile-blobs">
+              <div class="blob blob1"></div>
+              <div class="blob blob2"></div>
+            </div>
+            <div class="avatar" id="avatar-display">🌸</div>
+            <h2 class="profile-name" id="profile-name-display">Your Name</h2>
+            <p class="profile-tagline">Wellness journeyer</p>
+          </div>
+
+          <div class="card-section" style="margin-top:16px">
+            <div class="form-group">
+              <label class="form-label">Your Name</label>
+              <input class="form-input" id="p-name" placeholder="Enter your name">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Age (optional)</label>
+              <input class="form-input" id="p-age" type="number" placeholder="Your age">
+            </div>
+            <button class="primary-btn" onclick="saveProfile()">Update Profile</button>
+          </div>
+
+          <div style="margin-top:12px">
+            <button class="danger-btn" onclick="clearAllData()">Clear All My Data</button>
+          </div>
+        </div>
+
+        <div class="profile-main-panel">
+          <div class="stats-grid">
+            <div class="stat-card streak"><div class="stat-num" id="streak-num">0</div><div class="stat-label">Day Streak 🔥</div></div>
+            <div class="stat-card"><div class="stat-num" id="entries-num">0</div><div class="stat-label">Journal Entries 📔</div></div>
+            <div class="stat-card"><div class="stat-num" id="moods-num">0</div><div class="stat-label">Moods Logged 😊</div></div>
+            <div class="stat-card"><div class="stat-num" id="tasks-done-num">0</div><div class="stat-label">Tasks Done ✅</div></div>
+          </div>
+
+          <div class="profile-insights-card">
+            <h3 class="insights-title">Your Wellness Journey</h3>
+            <p class="insights-text">Keep showing up for yourself every day. Each mood logged, journal entry written, and goal completed is a step toward a healthier, more mindful you. You're doing great! 🌱</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── PAGE: RESOURCES ── -->
+    <div class="page" id="page-resources">
+      <div class="page-header">
+        <h2 class="page-title">Resources</h2>
+        <p class="page-subtitle">Tips for a balanced, fulfilling life</p>
+      </div>
+
+      <div class="resources-grid">
+        <div class="resource-category">
+          <p class="section-title">🧘 Stress Management</p>
+          <div class="resource-card stress"><h4>Take 5-minute breaks</h4><p>Step away from screens every hour. A short walk or stretch dramatically reduces cortisol levels and refreshes focus.</p></div>
+          <div class="resource-card stress"><h4>Progressive muscle relaxation</h4><p>Tense and release each muscle group for 5 seconds to release physical tension stored throughout the body.</p></div>
+          <div class="resource-card stress"><h4>Limit news consumption</h4><p>Set a specific time for news. Constant updates increase anxiety. Try 15–20 minutes maximum per day.</p></div>
+          <div class="resource-card stress"><h4>Talk to someone</h4><p>Sharing worries with a trusted friend or counselor reduces their psychological weight significantly.</p></div>
+        </div>
+
+        <div class="resource-category">
+          <p class="section-title">📚 Study Tips</p>
+          <div class="resource-card study"><h4>Pomodoro Technique</h4><p>Study 25 minutes, rest 5. After 4 cycles, take a longer 15–30 minute break. Proven to boost sustained focus.</p></div>
+          <div class="resource-card study"><h4>Active recall over re-reading</h4><p>Test yourself instead of re-reading notes. Retrieval practice is 2–3× more effective for long-term retention.</p></div>
+          <div class="resource-card study"><h4>Teach what you learn</h4><p>Explaining concepts out loud reveals gaps in understanding and deepens memory consolidation.</p></div>
+        </div>
+
+        <div class="resource-category">
+          <p class="section-title">🌙 Sleep Tips</p>
+          <div class="resource-card sleep"><h4>Consistent sleep schedule</h4><p>Go to bed and wake at the same time daily, even weekends. This anchors your circadian rhythm powerfully.</p></div>
+          <div class="resource-card sleep"><h4>No screens 1 hour before bed</h4><p>Blue light suppresses melatonin. Try journaling, light stretching, or reading instead.</p></div>
+          <div class="resource-card sleep"><h4>Keep your room cool and dark</h4><p>The optimal sleep temperature is 15–19°C. Darkness signals your brain it's time to rest deeply.</p></div>
+        </div>
+
+        <div class="resource-category helplines-category">
+          <p class="section-title" style="color:#f06fa4">Emergency Helplines</p>
+          <div class="helpline-card"><h4>iCall (India)</h4><p>Psychological counselling and mental health support</p><div class="helpline-num">9152987821</div></div>
+          <div class="helpline-card"><h4>Vandrevala Foundation</h4><p>24/7 free crisis helpline across India</p><div class="helpline-num">1860-2662-345</div></div>
+          <div class="helpline-card"><h4>AASRA</h4><p>Crisis intervention and suicide prevention</p><div class="helpline-num">9820466627</div></div>
+          <div class="helpline-card"><h4>Crisis Text Line (Global)</h4><p>Free text-based crisis support, available 24/7</p><div class="helpline-num">Text HOME to 741741</div></div>
+          <div class="helpline-card"><h4>Snehi (India)</h4><p>Emotional support and suicide prevention</p><div class="helpline-num">044-24640050</div></div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /main-content -->
+</div><!-- /app -->
+
+<script src="script.js"></script>
+</body>
+</html>
