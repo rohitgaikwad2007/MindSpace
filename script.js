@@ -50,16 +50,34 @@
 })();
 
 /* ══════════════════════════════════════════
-   DATA (localStorage)
+   DATA (MySQL backend via REST API)
 ══════════════════════════════════════════ */
-let moodHistory = JSON.parse(localStorage.getItem('ms_moods')   || '[]');
-let journals    = JSON.parse(localStorage.getItem('ms_journals') || '[]');
-let tasks       = JSON.parse(localStorage.getItem('ms_tasks')    || '[]');
-let profile     = JSON.parse(localStorage.getItem('ms_profile')  || JSON.stringify({
-  name:'', age:'', streak:0, lastVisit:''
-}));
+let moodHistory = [];
+let journals    = [];
+let tasks       = [];
+let profile     = { name:'', age:'', streak:0, lastVisit:'' };
 
-function save(key,val){localStorage.setItem(key,JSON.stringify(val));}
+/* ── API helpers ── */
+async function apiGet(url){
+  const res=await fetch(url);
+  if(!res.ok)throw new Error('API error '+url);
+  return res.json();
+}
+async function apiPost(url,data){
+  const res=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
+  if(!res.ok)throw new Error('API error '+url);
+  return res.json();
+}
+async function apiPut(url,data){
+  const res=await fetch(url,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
+  if(!res.ok)throw new Error('API error '+url);
+  return res.json();
+}
+async function apiDelete(url){
+  const res=await fetch(url,{method:'DELETE'});
+  if(!res.ok)throw new Error('API error '+url);
+  return res.json();
+}
 
 /* ── Quotes ── */
 const QUOTES=[
@@ -122,7 +140,7 @@ function updateStreak(){
   if(profile.lastVisit!==today){
     profile.streak=profile.lastVisit===yesterday?(profile.streak||0)+1:1;
     profile.lastVisit=today;
-    save('ms_profile',profile);
+    apiPut('/api/profile',profile).catch(()=>console.error('Failed to save profile'));
   }
 }
 
@@ -150,7 +168,7 @@ function saveMood(){
   const note=document.getElementById('mood-note').value.trim();
   const entry={...selectedMood,note,date:NOW.toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'})};
   moodHistory.unshift(entry);
-  save('ms_moods',moodHistory);
+  apiPost('/api/moods',entry).catch(()=>showToast('⚠️ Could not save mood — server error'));
   document.getElementById('mood-note').value='';
   document.querySelectorAll('.mood-card').forEach(c=>c.classList.remove('selected'));
   selectedMood=null;
@@ -161,7 +179,7 @@ function saveMood(){
 function quickMood(label,emoji){
   const entry={label,emoji,note:'',date:NOW.toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'})};
   moodHistory.unshift(entry);
-  save('ms_moods',moodHistory);
+  apiPost('/api/moods',entry).catch(()=>showToast('⚠️ Could not save mood — server error'));
   showToast(emoji+'  Quick mood logged!');
   updateHomeStats();
 }
@@ -202,7 +220,7 @@ function saveJournal(){
   if(!desc) {showToast('Please write something ✍️');return;}
   const entry={id:Date.now(),title,desc,date:NOW.toLocaleDateString('en-IN',{weekday:'short',day:'numeric',month:'short',year:'numeric'})};
   journals.unshift(entry);
-  save('ms_journals',journals);
+  apiPost('/api/journals',entry).catch(()=>showToast('⚠️ Could not save entry — server error'));
   document.getElementById('j-title').value='';
   document.getElementById('j-desc').value='';
   showToast('📔  Journal entry saved!');
@@ -211,7 +229,7 @@ function saveJournal(){
 
 function deleteJournal(id){
   journals=journals.filter(j=>j.id!==id);
-  save('ms_journals',journals);
+  apiDelete('/api/journals/'+id).catch(()=>showToast('⚠️ Could not delete entry — server error'));
   showToast('Entry deleted');
   renderJournals();updateHomeStats();
 }
@@ -312,20 +330,17 @@ const HT_DEFAULT_HABITS=[
 let htYear=2026;
 let htMonth=new Date().getMonth()+1;
 
-function htKey(y,m){return'ht_'+y+'_'+m;}
-
-function htLoad(y,m){
-  const raw=localStorage.getItem(htKey(y,m));
-  if(raw)return JSON.parse(raw);
-  if(y===2026){
+async function htLoad(y,m){
+  const habits=await apiGet(`/api/habits/${y}/${m}`);
+  if(habits.length===0&&y===2026){
     const seeded=HT_DEFAULT_HABITS.map((h,i)=>({id:Date.now()+i,name:h.name,goal:h.goal,marks:{}}));
-    localStorage.setItem(htKey(y,m),JSON.stringify(seeded));
+    await htSave(y,m,seeded);
     return seeded;
   }
-  return[];
+  return habits;
 }
 
-function htSave(y,m,habits){localStorage.setItem(htKey(y,m),JSON.stringify(habits));}
+async function htSave(y,m,habits){await apiPut(`/api/habits/${y}/${m}`,habits);}
 
 function htDaysInMonth(y,m){return new Date(y,m,0).getDate();}
 function htDayOfWeek(y,m,d){return new Date(y,m-1,d).getDay();}
@@ -346,7 +361,7 @@ function htToggleAddForm(){
   if(!isOpen)setTimeout(()=>document.getElementById('ht-new-name').focus(),80);
 }
 
-function htAddHabit(){
+async function htAddHabit(){
   const nameEl=document.getElementById('ht-new-name');
   const goalEl=document.getElementById('ht-new-goal');
   const emojiEl=document.getElementById('ht-new-emoji');
@@ -356,29 +371,29 @@ function htAddHabit(){
   if(!rawName){showToast('Please enter a habit name 📝');return;}
   if(!goal||goal<1||goal>31){showToast('Goal must be between 1 and 31 days 🎯');return;}
   const fullName=emoji?emoji+' '+rawName:rawName;
-  const habits=htLoad(htYear,htMonth);
+  const habits=await htLoad(htYear,htMonth);
   habits.push({id:Date.now(),name:fullName,goal,marks:{}});
-  htSave(htYear,htMonth,habits);
+  await htSave(htYear,htMonth,habits);
   nameEl.value='';goalEl.value='';emojiEl.value='';
   htToggleAddForm();showToast('✅ Habit added!');htRender();
 }
 
-function htDeleteHabit(id){
-  const habits=htLoad(htYear,htMonth).filter(h=>h.id!==id);
-  htSave(htYear,htMonth,habits);htRender();showToast('🗑️ Habit removed');
+async function htDeleteHabit(id){
+  const habits=(await htLoad(htYear,htMonth)).filter(h=>h.id!==id);
+  await htSave(htYear,htMonth,habits);htRender();showToast('🗑️ Habit removed');
 }
 
-function htToggleDay(id,day){
-  const habits=htLoad(htYear,htMonth);
+async function htToggleDay(id,day){
+  const habits=await htLoad(htYear,htMonth);
   const h=habits.find(h=>h.id===id);
   if(!h)return;
   h.marks[day]=!h.marks[day];
-  htSave(htYear,htMonth,habits);htRender();
+  await htSave(htYear,htMonth,habits);htRender();
 }
 
-function htRender(){
+async function htRender(){
+  const habits=await htLoad(htYear,htMonth);
   const totalDays=htDaysInMonth(htYear,htMonth);
-  const habits=htLoad(htYear,htMonth);
   document.getElementById('ht-month-select').value=htMonth;
   document.getElementById('ht-meta-badge').textContent=HT_MONTHS[htMonth-1]+' '+htYear+' · '+totalDays+' Days';
 
@@ -447,7 +462,8 @@ function saveProfile(){
   const age =document.getElementById('p-age').value.trim();
   if(name)profile.name=name;
   if(age) profile.age=age;
-  save('ms_profile',profile);renderProfile();showToast('Profile updated! 🌸');
+  apiPut('/api/profile',profile).catch(()=>showToast('⚠️ Could not save profile — server error'));
+  renderProfile();showToast('Profile updated! 🌸');
 }
 
 function renderProfile(){
@@ -470,7 +486,7 @@ function clearAllData(){
   if(!confirm('Are you sure? This will erase all your data. This cannot be undone.'))return;
   moodHistory=[];journals=[];
   profile={name:profile.name,age:profile.age,streak:0,lastVisit:''};
-  save('ms_moods',moodHistory);save('ms_journals',journals);save('ms_profile',profile);
+  apiDelete('/api/data').catch(()=>showToast('⚠️ Could not clear data — server error'));
   showToast('All data cleared');renderProfile();updateHomeStats();
 }
 
@@ -480,8 +496,15 @@ function escapeHtml(str){
 }
 
 /* ── Init ── */
-(function init(){
+(async function init(){
+  try{
+    [moodHistory,journals,profile]=await Promise.all([
+      apiGet('/api/moods'),
+      apiGet('/api/journals'),
+      apiGet('/api/profile'),
+    ]);
+  }catch(e){console.error('Failed to load data from server:',e);}
   updateStreak();initHomeMeta();updateHomeStats();
   document.getElementById('ht-month-select').value=htMonth;
-  htRender();
+  await htRender();
 })();
